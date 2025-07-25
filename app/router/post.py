@@ -47,7 +47,7 @@ def update_post(
             status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
         )
 
-    post_query.update(updated_post.model_dump(), synchronize_session=False)
+    post_query.update(updated_post.model_dump(), synchronize_session=False)  # type: ignore
 
     db.commit()
 
