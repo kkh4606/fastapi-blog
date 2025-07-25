@@ -35,7 +35,7 @@ def get_post(post_id: int, db: Session = Depends(database.get_db)):
 @router.put("/{post_id}")
 def update_post(
     post_id: int,
-    updated_post: schema.PostCreate,
+    updated_post: schema.PostUpdate,
     db: Session = Depends(database.get_db),
 ):
     post_query = db.query(models.Post).filter(models.Post.id == post_id)

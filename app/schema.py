@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -20,6 +20,12 @@ class Post(BaseModel):
 
 class PostCreate(Post):
     pass
+
+
+class PostUpdate(BaseModel):
+    title: Optional[str]
+    content: Optional[str]
+    published: Optional[bool] = False
 
 
 class PostOut(Post):
