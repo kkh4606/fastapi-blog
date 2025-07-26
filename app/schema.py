@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
+from typing import Optional
 
 
 class User(BaseModel):
@@ -46,3 +47,12 @@ class UserOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    id: Optional[str] = None

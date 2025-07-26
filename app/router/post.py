@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from .. import schema, database, models
+from .. import schema, database, models, oauth2
 
 
 router = APIRouter(prefix="/posts", tags=["POST"])
 
 
 @router.post("/", response_model=schema.PostOut)
-def create_post(post: schema.PostCreate, db: Session = Depends(database.get_db)):
-    new_post = models.Post(**post.model_dump(), owner_id=2)
+def create_post(
+    post: schema.PostCreate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    new_post = models.Post(**post.model_dump(), owner_id=current_user.id)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -16,13 +20,20 @@ def create_post(post: schema.PostCreate, db: Session = Depends(database.get_db))
 
 
 @router.get("/")
-def get_posts(db: Session = Depends(database.get_db)):
+def get_posts(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
     posts = db.query(models.Post).all()
     return posts
 
 
 @router.get("/{post_id}")
-def get_post(post_id: int, db: Session = Depends(database.get_db)):
+def get_post(
+    post_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(
@@ -37,6 +48,7 @@ def update_post(
     post_id: int,
     updated_post: schema.PostUpdate,
     db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
 ):
     post_query = db.query(models.Post).filter(models.Post.id == post_id)
 
@@ -55,7 +67,11 @@ def update_post(
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(post_id: int, db: Session = Depends(database.get_db)):
+def delete_post(
+    post_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
 
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
