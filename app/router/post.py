@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from .. import schema, database, models, oauth2
+from .. import model, schema, database, oauth2
 
 
 router = APIRouter(prefix="/posts", tags=["POST"])
@@ -10,9 +10,9 @@ router = APIRouter(prefix="/posts", tags=["POST"])
 def create_post(
     post: schema.PostCreate,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(oauth2.get_current_user),
+    current_user: model.User = Depends(oauth2.get_current_user),
 ):
-    new_post = models.Post(**post.model_dump(), owner_id=current_user.id)
+    new_post = model.Post(**post.model_dump(), owner_id=current_user.id)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -22,9 +22,9 @@ def create_post(
 @router.get("/")
 def get_posts(
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(oauth2.get_current_user),
+    current_user: model.User = Depends(oauth2.get_current_user),
 ):
-    posts = db.query(models.Post).all()
+    posts = db.query(model.Post).all()
     return posts
 
 
@@ -32,9 +32,9 @@ def get_posts(
 def get_post(
     post_id: int,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(oauth2.get_current_user),
+    current_user: model.User = Depends(oauth2.get_current_user),
 ):
-    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    post = db.query(model.Post).filter(model.Post.id == post_id).first()
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="post not found"
@@ -48,9 +48,9 @@ def update_post(
     post_id: int,
     updated_post: schema.PostUpdate,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(oauth2.get_current_user),
+    current_user: model.User = Depends(oauth2.get_current_user),
 ):
-    post_query = db.query(models.Post).filter(models.Post.id == post_id)
+    post_query = db.query(model.Post).filter(model.Post.id == post_id)
 
     post = post_query.first()
 
@@ -70,10 +70,10 @@ def update_post(
 def delete_post(
     post_id: int,
     db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(oauth2.get_current_user),
+    current_user: model.User = Depends(oauth2.get_current_user),
 ):
 
-    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    post = db.query(model.Post).filter(model.Post.id == post_id).first()
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="post not found"

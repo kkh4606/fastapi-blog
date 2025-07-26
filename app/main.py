@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from app.router import user, post, auth
-from . import models
+from . import model
 from .database import engine
 
-models.Base.metadata.create_all(bind=engine)
+model.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
