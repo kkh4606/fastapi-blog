@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr  # type:ignore
 from typing import List, Optional
 from datetime import datetime
 from typing import Optional
@@ -29,13 +29,29 @@ class PostUpdate(BaseModel):
     published: Optional[bool] = False
 
 
+class Comment(BaseModel):
+    content: str
+
+
+class CommentOUt(BaseModel):
+    user_id: int
+    post_id: int
+    content: str
+    date_commented: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class PostOut(Post):
     id: int
     owner_id: int | None = None
     date_created: datetime
+    like_count: int = 0
+    comments: List[CommentOUt] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserOut(BaseModel):
@@ -46,7 +62,7 @@ class UserOut(BaseModel):
     posts: List[PostOut] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Token(BaseModel):

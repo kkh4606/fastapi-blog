@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from .. import schema, database, models, utils
+from .. import schema, database, models, utils, oauth2
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -19,8 +19,12 @@ def create_user(user: schema.UserCreate, db: Session = Depends(database.get_db))
 
 
 @router.get("/", response_model=List[schema.UserOut])
-def get_users(db: Session = Depends(database.get_db)):
+def get_users(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
     users = db.query(models.User).all()
+
     return users
 
 
