@@ -33,10 +33,9 @@ class Comment(BaseModel):
     content: str
 
 
-class CommentOUt(BaseModel):
+class CommentOUt(Comment):
     user_id: int
     post_id: int
-    content: str
     date_commented: datetime
 
     class Config:

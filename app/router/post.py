@@ -144,3 +144,56 @@ def post_comment(
     db.commit()
     db.refresh(comment)
     return comment
+
+
+@router.put("/comments/{comment_id}", response_model=schema.CommentOUt)
+def update_comment(
+    comment_id: int,
+    update_comment: schema.Comment,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="comment not found"
+        )
+
+    if comment.user_id != current_user.id:  # type:ignore
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this comment",
+        )
+
+    comment.content = update_comment.content  # type:ignore
+    db.commit()
+    db.refresh(comment)
+
+    return comment
+
+
+@router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_comment(
+    comment_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="comment not found"
+        )
+
+    if comment.user_id != current_user.id:  # type:ignore
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this comment",
+        )
+
+    db.delete(comment)
+    db.commit()
+
+    return
