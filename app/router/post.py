@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from .. import schema, database, models, oauth2
-from typing import List
+from typing import List, Optional
+from sqlalchemy import or_
 
 
 router = APIRouter(prefix="/posts", tags=["POST"])
@@ -25,16 +26,30 @@ def create_post(
 def get_posts(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(oauth2.get_current_user),
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 10,
 ):
-    posts = (
-        db.query(models.Post)
-        .options(joinedload(models.Post.comments), joinedload(models.Post.likes))
-        .all()
+    query = db.query(models.Post).options(
+        joinedload(models.Post.comments), joinedload(models.Post.likes)
     )
+
+    if search:
+
+        query = query.filter(
+            or_(
+                models.Post.title.ilike(f"%{search}%"),
+                models.Post.content.ilike(f"%{search}%"),
+            )
+        )
+    # get total posts
+
+    total = query.count()
+    posts = query.offset(skip).limit(limit).all()
 
     for post in posts:
         post.like_count = len(post.likes)
-    return posts
+    return {"total": total, "skip": skip, "limit": limit, "results": posts}
 
 
 @router.get("/{post_id}")
