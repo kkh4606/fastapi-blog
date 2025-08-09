@@ -22,7 +22,7 @@ def create_post(
     return new_post
 
 
-@router.get("/", response_model=List[schema.PostOut])
+@router.get("/", response_model=schema.PaginatedPosts)
 def get_posts(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(oauth2.get_current_user),

@@ -53,6 +53,16 @@ class PostOut(Post):
         from_attributes = True
 
 
+class PaginatedPosts(BaseModel):
+    total: int
+    skip: int
+    limit: int
+    results: List[PostOut]
+
+    class Config:
+        orm_mode = True
+
+
 class UserOut(BaseModel):
     id: int
     email: EmailStr
